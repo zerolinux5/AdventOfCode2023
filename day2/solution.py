@@ -32,6 +32,39 @@ def soln1(data):
             sum += int(gameid)
     return sum
 
+def getMinColorCountFromGame(game):
+    limits = {
+        'red': 0,
+        'green': 0,
+        'blue': 0,
+    }
+    colors = game.split(',')
+    for color in colors:
+        color = color.strip()
+        number, colorName = color.split(' ')
+        limits[colorName] = max(limits[colorName], int(number))
+    return limits
+
+def soln2(data):
+    sum = 0
+    for line in data:
+        line = line.lower().strip()
+        games = line.split(':')[1].split(';')
+        actualLimits = {
+            'red': 0,
+            'green': 0,
+            'blue': 0,
+        }
+        for game in games:
+            gameLimits = getMinColorCountFromGame(game)
+            for color in actualLimits:
+                actualLimits[color] = max(actualLimits[color], gameLimits[color])
+        runningSum = 1
+        for color in actualLimits:
+            runningSum *= actualLimits[color]
+        sum += runningSum
+    return sum
+
 with open('input.txt') as f:
     data = f.readlines()
-    print(soln1(data))
+    print(soln2(data))
