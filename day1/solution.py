@@ -37,22 +37,34 @@ def parseLine(line, forward=True):
         'thgie': 8,
         'enin': 9,
     }
-    digit = None
-    digitIdx = float("inf")
-    for idx, char in enumerate(line):
-        if char.isdigit():
-            digit = char
-            digitIdx = idx
-            break
-    translationMap = translationMapForward
-    if not forward:
+    start = 0
+    end = 0
+    current = ''
+    if forward:
+        translationMap = translationMapForward
+    else:
         translationMap = translationMapBackward
-    for key in translationMap.keys():
-        index = line.find(key)
-        if index != -1 and index < digitIdx:
-            digitIdx = line.index(key)
-            digit = str(translationMap[key])
-    return digit
+    posibilities = set(translationMap.keys())
+    while end < len(line):
+        if line[end].isdigit():
+            return line[end]
+        current += line[end]
+        removeSet = set()
+        for posibility in posibilities:
+            if posibility.startswith(current):
+                continue
+            else:
+                removeSet.add(posibility)
+        posibilities -= removeSet
+        if len(posibilities) == 1 and current in posibilities:
+            return str(translationMap[current])
+        elif len(posibilities) == 0:
+            start += 1
+            end = start
+            current = ''
+            posibilities = set(translationMap.keys())
+        else:
+            end += 1
 
 def soln2(lines):
     sum = 0
