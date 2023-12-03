@@ -1,3 +1,5 @@
+import copy
+
 def parseNumber(number):
     if number == '':
         return 0
@@ -11,7 +13,7 @@ def insertIntoMap(numberMap, rowIdx, colIdx, numberString):
         for i in range(1, len(numberString)+1):
             numberMap[rowIdx][colIdx-i] = number
 
-def soln1(lines):
+def generateNumberMapAndSymbolSet(lines, specificChar=None):
     numberMap = {}
     symbolSet = set()
     for rowIdx, line in enumerate(lines):
@@ -26,8 +28,13 @@ def soln1(lines):
             else:
                 insertIntoMap(numberMap, rowIdx, colIdx, numberString)
                 numberString = ''
-                symbolSet.add(f"{rowIdx},{colIdx}")
+                if specificChar is None or char == specificChar:
+                    symbolSet.add(f"{rowIdx},{colIdx}")
         insertIntoMap(numberMap, rowIdx, colIdx, numberString)
+    return numberMap, symbolSet
+
+def soln1(lines):
+    numberMap, symbolSet = generateNumberMapAndSymbolSet(lines)
     sum = 0
     moveArray = [-1, 0, 1]
     for symbolLocation in symbolSet:
@@ -49,6 +56,37 @@ def soln1(lines):
                         del numberMap[newRowIdx]
     return sum
 
+def soln2(lines):
+    numberMap, symbolSet = generateNumberMapAndSymbolSet(lines, '*')
+    sum = 0
+    moveArray = [-1, 0, 1]
+    for symbolLocation in symbolSet:
+        rowIdx, colIdx = symbolLocation.split(',')
+        numberMapCopy = copy.deepcopy(numberMap)
+        count = 0
+        runningSum = 1
+        for rowDelta in moveArray:
+            for colDelta in moveArray:
+                newRowIdx = int(rowIdx) + rowDelta
+                newColIdx = int(colIdx) + colDelta
+                if newRowIdx in numberMapCopy and newColIdx in numberMapCopy[newRowIdx]:
+                    count += 1
+                    runningSum *= numberMapCopy[newRowIdx][newColIdx]
+                    minColIdx = newColIdx
+                    while numberMapCopy[newRowIdx].get(minColIdx) is not None:
+                        minColIdx -= 1
+                    minColIdx += 1
+                    while numberMapCopy[newRowIdx].get(minColIdx) is not None:
+                        del numberMapCopy[newRowIdx][minColIdx]
+                        minColIdx += 1
+                    if numberMapCopy[newRowIdx] == {}:
+                        del numberMapCopy[newRowIdx]
+        if count == 2:
+            sum += runningSum
+            numberMap = numberMapCopy
+    return sum
+
+
 with open('input.txt') as f:
     lines = f.readlines()
-    print(soln1(lines))
+    print(soln2(lines))
